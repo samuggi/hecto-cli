@@ -427,4 +427,6 @@ bun run typecheck
 
 ## License
 
-MIT
+Copyright © 2024 AXTeam. All Rights Reserved.
+
+This software is proprietary and confidential. No permission is granted to use, copy, modify, or distribute this software without explicit written authorization from the copyright holder.

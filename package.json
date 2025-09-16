@@ -29,7 +29,7 @@
     "ai"
   ],
   "author": "Your Name",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.0",
     "axios": "^1.7.0",
