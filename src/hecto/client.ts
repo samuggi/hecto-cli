@@ -1,9 +1,9 @@
 import OpenAI from "openai";
 import type { ChatCompletionMessageParam } from "openai/resources/chat";
 
-export type GrokMessage = ChatCompletionMessageParam;
+export type HectoMessage = ChatCompletionMessageParam;
 
-export interface GrokTool {
+export interface HectoTool {
   type: "function";
   function: {
     name: string;
@@ -16,7 +16,7 @@ export interface GrokTool {
   };
 }
 
-export interface GrokToolCall {
+export interface HectoToolCall {
   id: string;
   type: "function";
   function: {
@@ -34,29 +34,29 @@ export interface SearchOptions {
   search_parameters?: SearchParameters;
 }
 
-export interface GrokResponse {
+export interface HectoResponse {
   choices: Array<{
     message: {
       role: string;
       content: string | null;
-      tool_calls?: GrokToolCall[];
+      tool_calls?: HectoToolCall[];
     };
     finish_reason: string;
   }>;
 }
 
-export class GrokClient {
+export class HectoClient {
   private client: OpenAI;
-  private currentModel: string = "grok-code-fast-1";
+  private currentModel: string = "hecto-1";
   private defaultMaxTokens: number;
 
   constructor(apiKey: string, model?: string, baseURL?: string) {
     this.client = new OpenAI({
       apiKey,
-      baseURL: baseURL || process.env.GROK_BASE_URL || "https://api.x.ai/v1",
+      baseURL: baseURL || process.env.HECTO_BASE_URL || "http://localhost:8000/v1",
       timeout: 360000,
     });
-    const envMax = Number(process.env.GROK_MAX_TOKENS);
+    const envMax = Number(process.env.HECTO_MAX_TOKENS);
     this.defaultMaxTokens = Number.isFinite(envMax) && envMax > 0 ? envMax : 1536;
     if (model) {
       this.currentModel = model;
@@ -72,11 +72,11 @@ export class GrokClient {
   }
 
   async chat(
-    messages: GrokMessage[],
-    tools?: GrokTool[],
+    messages: HectoMessage[],
+    tools?: HectoTool[],
     model?: string,
     searchOptions?: SearchOptions
-  ): Promise<GrokResponse> {
+  ): Promise<HectoResponse> {
     try {
       const requestPayload: any = {
         model: model || this.currentModel,
@@ -95,15 +95,15 @@ export class GrokClient {
       const response =
         await this.client.chat.completions.create(requestPayload);
 
-      return response as GrokResponse;
+      return response as HectoResponse;
     } catch (error: any) {
-      throw new Error(`Grok API error: ${error.message}`);
+      throw new Error(`Hecto API error: ${error.message}`);
     }
   }
 
   async *chatStream(
-    messages: GrokMessage[],
-    tools?: GrokTool[],
+    messages: HectoMessage[],
+    tools?: HectoTool[],
     model?: string,
     searchOptions?: SearchOptions
   ): AsyncGenerator<any, void, unknown> {
@@ -131,15 +131,15 @@ export class GrokClient {
         yield chunk;
       }
     } catch (error: any) {
-      throw new Error(`Grok API error: ${error.message}`);
+      throw new Error(`Hecto API error: ${error.message}`);
     }
   }
 
   async search(
     query: string,
     searchParameters?: SearchParameters
-  ): Promise<GrokResponse> {
-    const searchMessage: GrokMessage = {
+  ): Promise<HectoResponse> {
+    const searchMessage: HectoMessage = {
       role: "user",
       content: query,
     };

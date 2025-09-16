@@ -1,8 +1,8 @@
-import { GrokTool } from "./client";
+import { HectoTool } from "./client";
 import { MCPManager, MCPTool } from "../mcp/client";
 import { loadMCPConfig } from "../mcp/config";
 
-const BASE_GROK_TOOLS: GrokTool[] = [
+const BASE_HECTO_TOOLS: HectoTool[] = [
   {
     type: "function",
     function: {
@@ -244,7 +244,7 @@ const BASE_GROK_TOOLS: GrokTool[] = [
 ];
 
 // Morph Fast Apply tool (conditional)
-const MORPH_EDIT_TOOL: GrokTool = {
+const MORPH_EDIT_TOOL: HectoTool = {
   type: "function",
   function: {
     name: "edit_file",
@@ -271,8 +271,8 @@ const MORPH_EDIT_TOOL: GrokTool = {
 };
 
 // Function to build tools array conditionally
-function buildGrokTools(): GrokTool[] {
-  const tools = [...BASE_GROK_TOOLS];
+function buildHectoTools(): HectoTool[] {
+  const tools = [...BASE_HECTO_TOOLS];
   
   // Add Morph Fast Apply tool if API key is available
   if (process.env.MORPH_API_KEY) {
@@ -283,7 +283,7 @@ function buildGrokTools(): GrokTool[] {
 }
 
 // Export dynamic tools array
-export const GROK_TOOLS: GrokTool[] = buildGrokTools();
+export const HECTO_TOOLS: HectoTool[] = buildHectoTools();
 
 // Global MCP manager instance
 let mcpManager: MCPManager | null = null;
@@ -339,7 +339,7 @@ export async function initializeMCPServers(): Promise<void> {
   }
 }
 
-export function convertMCPToolToGrokTool(mcpTool: MCPTool): GrokTool {
+export function convertMCPToolToHectoTool(mcpTool: MCPTool): HectoTool {
   return {
     type: "function",
     function: {
@@ -354,22 +354,22 @@ export function convertMCPToolToGrokTool(mcpTool: MCPTool): GrokTool {
   };
 }
 
-export function addMCPToolsToGrokTools(baseTools: GrokTool[]): GrokTool[] {
+export function addMCPToolsToHectoTools(baseTools: HectoTool[]): HectoTool[] {
   if (!mcpManager) {
     return baseTools;
   }
   
   const mcpTools = mcpManager.getTools();
-  const grokMCPTools = mcpTools.map(convertMCPToolToGrokTool);
+  const hectoMCPTools = mcpTools.map(convertMCPToolToHectoTool);
   
-  return [...baseTools, ...grokMCPTools];
+  return [...baseTools, ...hectoMCPTools];
 }
 
-export async function getAllGrokTools(): Promise<GrokTool[]> {
+export async function getAllHectoTools(): Promise<HectoTool[]> {
   const manager = getMCPManager();
   // Try to initialize servers if not already done, but don't block
   manager.ensureServersInitialized().catch(() => {
     // Ignore initialization errors to avoid blocking
   });
-  return addMCPToolsToGrokTools(GROK_TOOLS);
+  return addMCPToolsToHectoTools(HECTO_TOOLS);
 }

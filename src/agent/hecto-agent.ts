@@ -1,11 +1,11 @@
-import { GrokClient, GrokMessage, GrokToolCall } from "../grok/client";
+import { HectoClient, HectoMessage, HectoToolCall } from "../hecto/client";
 import {
-  GROK_TOOLS,
-  addMCPToolsToGrokTools,
-  getAllGrokTools,
+  HECTO_TOOLS,
+  addMCPToolsToHectoTools,
+  getAllHectoTools,
   getMCPManager,
   initializeMCPServers,
-} from "../grok/tools";
+} from "../hecto/tools";
 import { loadMCPConfig } from "../mcp/config";
 import {
   TextEditorTool,
@@ -25,8 +25,8 @@ export interface ChatEntry {
   type: "user" | "assistant" | "tool_result" | "tool_call";
   content: string;
   timestamp: Date;
-  toolCalls?: GrokToolCall[];
-  toolCall?: GrokToolCall;
+  toolCalls?: HectoToolCall[];
+  toolCall?: HectoToolCall;
   toolResult?: { success: boolean; output?: string; error?: string };
   isStreaming?: boolean;
 }
@@ -34,14 +34,14 @@ export interface ChatEntry {
 export interface StreamingChunk {
   type: "content" | "tool_calls" | "tool_result" | "done" | "token_count";
   content?: string;
-  toolCalls?: GrokToolCall[];
-  toolCall?: GrokToolCall;
+  toolCalls?: HectoToolCall[];
+  toolCall?: HectoToolCall;
   toolResult?: ToolResult;
   tokenCount?: number;
 }
 
-export class GrokAgent extends EventEmitter {
-  private grokClient: GrokClient;
+export class HectoAgent extends EventEmitter {
+  private hectoClient: HectoClient;
   private textEditor: TextEditorTool;
   private morphEditor: MorphEditorTool | null;
   private bash: BashTool;
@@ -49,7 +49,7 @@ export class GrokAgent extends EventEmitter {
   private confirmationTool: ConfirmationTool;
   private search: SearchTool;
   private chatHistory: ChatEntry[] = [];
-  private messages: GrokMessage[] = [];
+  private messages: HectoMessage[] = [];
   private tokenCounter: TokenCounter;
   private abortController: AbortController | null = null;
   private mcpInitialized: boolean = false;
@@ -64,9 +64,9 @@ export class GrokAgent extends EventEmitter {
     super();
     const manager = getSettingsManager();
     const savedModel = manager.getCurrentModel();
-    const modelToUse = model || savedModel || "grok-code-fast-1";
+    const modelToUse = model || savedModel || "hecto-1";
     this.maxToolRounds = maxToolRounds || 400;
-    this.grokClient = new GrokClient(apiKey, modelToUse, baseURL);
+    this.hectoClient = new HectoClient(apiKey, modelToUse, baseURL);
     this.textEditor = new TextEditorTool();
     this.morphEditor = process.env.MORPH_API_KEY ? new MorphEditorTool() : null;
     this.bash = new BashTool();
@@ -168,8 +168,8 @@ Current working directory: ${process.cwd()}`,
   }
 
   private isGrokModel(): boolean {
-    const currentModel = this.grokClient.getCurrentModel();
-    return currentModel.toLowerCase().includes("grok");
+    const currentModel = this.hectoClient.getCurrentModel();
+    return currentModel.toLowerCase().includes("hecto");
   }
 
   // Heuristic: enable web search only when likely needed
@@ -216,7 +216,7 @@ Current working directory: ${process.cwd()}`,
 
     try {
       const tools = await getAllGrokTools();
-      let currentResponse = await this.grokClient.chat(
+      let currentResponse = await this.hectoClient.chat(
         this.messages,
         tools,
         undefined,
@@ -312,7 +312,7 @@ Current working directory: ${process.cwd()}`,
           }
 
           // Get next response - this might contain more tool calls
-          currentResponse = await this.grokClient.chat(
+          currentResponse = await this.hectoClient.chat(
             this.messages,
             tools,
             undefined,
@@ -436,7 +436,7 @@ Current working directory: ${process.cwd()}`,
 
         // Stream response and accumulate
         const tools = await getAllGrokTools();
-        const stream = this.grokClient.chatStream(
+        const stream = this.hectoClient.chatStream(
           this.messages,
           tools,
           undefined,
@@ -633,7 +633,7 @@ Current working directory: ${process.cwd()}`,
     }
   }
 
-  private async executeTool(toolCall: GrokToolCall): Promise<ToolResult> {
+  private async executeTool(toolCall: HectoToolCall): Promise<ToolResult> {
     try {
       const args = JSON.parse(toolCall.function.arguments);
 
@@ -711,7 +711,7 @@ Current working directory: ${process.cwd()}`,
     }
   }
 
-  private async executeMCPTool(toolCall: GrokToolCall): Promise<ToolResult> {
+  private async executeMCPTool(toolCall: HectoToolCall): Promise<ToolResult> {
     try {
       const args = JSON.parse(toolCall.function.arguments);
       const mcpManager = getMCPManager();
@@ -762,7 +762,7 @@ Current working directory: ${process.cwd()}`,
   }
 
   getCurrentModel(): string {
-    return this.grokClient.getCurrentModel();
+    return this.hectoClient.getCurrentModel();
   }
 
   setModel(model: string): void {

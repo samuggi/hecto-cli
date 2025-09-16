@@ -3,18 +3,18 @@ import * as path from "path";
 import * as os from "os";
 
 /**
- * User-level settings stored in ~/.grok/user-settings.json
+ * User-level settings stored in ~/.hecto/user-settings.json
  * These are global settings that apply across all projects
  */
 export interface UserSettings {
-  apiKey?: string; // Grok API key
+  apiKey?: string; // Hecto API key
   baseURL?: string; // API base URL
   defaultModel?: string; // User's preferred default model
   models?: string[]; // Available models list
 }
 
 /**
- * Project-level settings stored in .grok/settings.json
+ * Project-level settings stored in .hecto/settings.json
  * These are project-specific settings
  */
 export interface ProjectSettings {
@@ -26,14 +26,10 @@ export interface ProjectSettings {
  * Default values for user settings
  */
 const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
-  baseURL: "https://api.x.ai/v1",
-  defaultModel: "grok-code-fast-1",
+  baseURL: "http://localhost:8000/v1",
+  defaultModel: "hecto-1",
   models: [
-    "grok-code-fast-1",
-    "grok-4-latest",
-    "grok-3-latest",
-    "grok-3-fast",
-    "grok-3-mini-fast",
+    "hecto-1",
   ],
 };
 
@@ -41,7 +37,7 @@ const DEFAULT_USER_SETTINGS: Partial<UserSettings> = {
  * Default values for project settings
  */
 const DEFAULT_PROJECT_SETTINGS: Partial<ProjectSettings> = {
-  model: "grok-code-fast-1",
+  model: "hecto-1",
 };
 
 /**
@@ -54,17 +50,17 @@ export class SettingsManager {
   private projectSettingsPath: string;
 
   private constructor() {
-    // User settings path: ~/.grok/user-settings.json
+    // User settings path: ~/.hecto/user-settings.json
     this.userSettingsPath = path.join(
       os.homedir(),
-      ".grok",
+      ".hecto",
       "user-settings.json"
     );
 
     // Project settings path: .grok/settings.json (in current working directory)
     this.projectSettingsPath = path.join(
       process.cwd(),
-      ".grok",
+      ".hecto",
       "settings.json"
     );
   }
@@ -90,7 +86,7 @@ export class SettingsManager {
   }
 
   /**
-   * Load user settings from ~/.grok/user-settings.json
+   * Load user settings from ~/.hecto/user-settings.json
    */
   public loadUserSettings(): UserSettings {
     try {
@@ -115,7 +111,7 @@ export class SettingsManager {
   }
 
   /**
-   * Save user settings to ~/.grok/user-settings.json
+   * Save user settings to ~/.hecto/user-settings.json
    */
   public saveUserSettings(settings: Partial<UserSettings>): void {
     try {
@@ -170,7 +166,7 @@ export class SettingsManager {
   }
 
   /**
-   * Load project settings from .grok/settings.json
+   * Load project settings from .hecto/settings.json
    */
   public loadProjectSettings(): ProjectSettings {
     try {
@@ -195,7 +191,7 @@ export class SettingsManager {
   }
 
   /**
-   * Save project settings to .grok/settings.json
+   * Save project settings to .hecto/settings.json
    */
   public saveProjectSettings(settings: Partial<ProjectSettings>): void {
     try {
@@ -267,7 +263,7 @@ export class SettingsManager {
       return userDefaultModel;
     }
 
-    return DEFAULT_PROJECT_SETTINGS.model || "grok-code-fast-1";
+    return DEFAULT_PROJECT_SETTINGS.model || "hecto-1";
   }
 
   /**
@@ -290,7 +286,7 @@ export class SettingsManager {
    */
   public getApiKey(): string | undefined {
     // First check environment variable
-    const envApiKey = process.env.GROK_API_KEY;
+    const envApiKey = process.env.HECTO_API_KEY;
     if (envApiKey) {
       return envApiKey;
     }
@@ -304,7 +300,7 @@ export class SettingsManager {
    */
   public getBaseURL(): string {
     // First check environment variable
-    const envBaseURL = process.env.GROK_BASE_URL;
+    const envBaseURL = process.env.HECTO_BASE_URL;
     if (envBaseURL) {
       return envBaseURL;
     }
@@ -312,7 +308,7 @@ export class SettingsManager {
     // Then check user settings
     const userBaseURL = this.getUserSetting("baseURL");
     return (
-      userBaseURL || DEFAULT_USER_SETTINGS.baseURL || "https://api.x.ai/v1"
+      userBaseURL || DEFAULT_USER_SETTINGS.baseURL || "http://localhost:8000/v1"
     );
   }
 }
